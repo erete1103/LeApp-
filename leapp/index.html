@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeApp! - 英単語暗記＆チェック</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ヘッダー：ブランド名・ランク・ユーザー情報 -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-area">
+        <h1 class="brand-logo">LeApp!</h1>
+        <span id="user-rank" class="rank-badge">RANK: BEGINNER</span>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-pill">
+          <span>合計スコア</span>
+          <strong id="total-score">0</strong>
+        </div>
+        <div class="stat-pill">
+          <span>プレイ回数</span>
+          <strong id="play-count">0</strong>
+        </div>
+        <div id="auth-area" class="auth-area">
+          <span id="user-name-display" class="user-name">ゲスト</span>
+          <button id="login-btn" type="button" class="btn btn-outline">Googleログイン</button>
+          <button id="logout-btn" type="button" class="btn btn-ghost hidden">ログアウト</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- モード切替ナビゲーション -->
+    <nav class="main-nav" aria-label="メインメニュー">
+      <button type="button" class="nav-btn active" data-tab="study100">100単語暗記</button>
+      <button type="button" class="nav-btn" data-tab="check">暗記チェック</button>
+      <button type="button" class="nav-btn" data-tab="wordlist">単語確認</button>
+      <button type="button" class="nav-btn" data-tab="ranking">ランキング</button>
+    </nav>
+  </header>
+
+  <main class="main-container">
+    <!-- 1. 100単語暗記モード -->
+    <section id="tab-study100" class="tab-panel active">
+      <div class="panel-header">
+        <div>
+          <h2>100単語暗記モード</h2>
+          <p class="panel-desc">100語ずつ一気に暗記。隠す側を選んで、自己評価でスコアを更新します。</p>
+        </div>
+        <div class="controls-row">
+          <label for="study-section-select" class="sr-only">セクション選択</label>
+          <select id="study-section-select" class="select-input">
+            <!-- main.js / study100.js でセクション1〜23を自動生成 -->
+          </select>
+
+          <div class="segmented-control" role="group" aria-label="隠し方選択">
+            <button type="button" class="seg-btn active" data-hide="ja">和訳を隠す</button>
+            <button type="button" class="seg-btn" data-hide="en">英単語を隠す</button>
+            <button type="button" class="seg-btn" data-hide="none">両方表示</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="study100-list" class="study-list">
+        <!-- study100.js で100単語カード/行を描画 -->
+      </div>
+    </section>
+
+    <!-- 2. 暗記チェックモード -->
+    <section id="tab-check" class="tab-panel">
+      <div class="panel-header">
+        <div>
+          <h2>暗記チェックモード</h2>
+          <p class="panel-desc">和訳4択・英訳4択・スペル入力で定着度をチェックします。</p>
+        </div>
+        <div class="controls-row">
+          <select id="check-section-select" class="select-input">
+            <option value="all">全セクション（1〜23）</option>
+          </select>
+          <select id="check-type-select" class="select-input">
+            <option value="ja4">和訳4択（英→日）</option>
+            <option value="en4">英訳4択（日→英）</option>
+            <option value="spell">スペルチェック（日→英入力）</option>
+          </select>
+          <button id="start-check-btn" type="button" class="btn btn-primary">出題スタート</button>
+        </div>
+      </div>
+
+      <div id="check-stage" class="quiz-card">
+        <p id="check-prompt-label" class="quiz-label">モードとセクションを選んで「出題スタート」を押してください</p>
+        <div id="check-question" class="quiz-question">---</div>
+
+        <!-- 4択エリア -->
+        <div id="choices-area" class="choices-grid"></div>
+
+        <!-- スペル入力エリア -->
+        <div id="spell-area" class="spell-box hidden">
+          <input
+            id="spell-input"
+            type="text"
+            class="text-input"
+            placeholder="英単語を入力してください"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+          <button id="spell-submit-btn" type="button" class="btn btn-primary">回答する</button>
+        </div>
+
+        <!-- 判定・まぐれ減点エリア -->
+        <div id="feedback-area" class="feedback-box hidden">
+          <p id="feedback-text" class="feedback-text"></p>
+          <div class="feedback-actions">
+            <button id="fluke-penalty-btn" type="button" class="btn btn-danger-outline hidden">
+              まぐれだったのでマイナスにする
+            </button>
+            <button id="next-question-btn" type="button" class="btn btn-secondary">次の問題へ</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 単語確認モード -->
+    <section id="tab-wordlist" class="tab-panel">
+      <div class="panel-header">
+        <div>
+          <h2>単語確認</h2>
+          <p class="panel-desc">全2,300単語と和訳・スコアを表形式で確認できます。</p>
+        </div>
+        <div class="controls-row">
+          <select id="list-section-select" class="select-input">
+            <option value="all">全セクション</option>
+          </select>
+          <input
+            id="word-search-input"
+            type="search"
+            class="text-input"
+            placeholder="英単語・和訳で検索..."
+          />
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="word-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Sec</th>
+              <th>英単語</th>
+              <th>和訳</th>
+              <th>和訳スコア</th>
+              <th>英訳スコア</th>
+            </tr>
+          </thead>
+          <tbody id="word-table-body">
+            <!-- wordList.js で描画 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. ランキング -->
+    <section id="tab-ranking" class="tab-panel">
+      <div class="panel-header">
+        <div>
+          <h2>ランキング</h2>
+          <p class="panel-desc">スコア上位のユーザーを表示します。</p>
+        </div>
+        <button id="refresh-ranking-btn" type="button" class="btn btn-outline">更新</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="word-table">
+          <thead>
+            <tr>
+              <th>順位</th>
+              <th>ユーザーネーム</th>
+              <th>ランク</th>
+              <th>合計スコア</th>
+              <th>プレイ回数</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-table-body">
+            <!-- firebase.js / main.js で描画 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+<!-- 各JSモジュール -->
+  <script type="module" src="js/main.js"></script>
+  <script src="js/study100.js"></script>
+  <script src="js/checkMode.js"></script>
+</body>
+</html>
